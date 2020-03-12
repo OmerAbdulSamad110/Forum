@@ -17,4 +17,10 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/threads', 'ThreadController@index');
+Route::resource('/threads', 'ThreadController');
+Route::get('/threads/{slug}/{thread}', 'ThreadController@show');
+Route::post('/threads/{slug}/{thread}/reply', 'ReplyController@store');
+
+Auth::routes();
+
+Route::get('/home', 'HomeController@index')->name('home');
