@@ -9,9 +9,6 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    <!-- Scripts -->
-    <script src="{{ asset('js/app.js') }}" defer></script>
-
     <!-- Fonts -->
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
@@ -33,8 +30,33 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <!-- Left Side Of Navbar -->
                     <ul class="navbar-nav mr-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/threads">{{ __('All Threads') }}</a>
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" id="browse-threads" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{ __('Browse Threads') }}
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="browse-threads">
+                                <a href="/threads" class="dropdown-item">{{ __('All Threads') }}</a>
+                                @auth                                    
+                                    <a href="/threads?by={{ auth()->user()->name }}" class="dropdown-item">{{ __('My Threads') }}</a>
+                                    <a href="/threads?popular=1" class="dropdown-item">{{ __('Popular Threads') }}</a>
+                                    <a href="/threads?unanswered=1" class="dropdown-item">{{ __('Unreplied Threads') }}</a>
+                                @endauth
+                            </div>
+                        </li>
+                        @auth
+                            <li class="nav-item">
+                                <a class="nav-link" href="/threads/create">{{ __('New Thread') }}</a>
+                            </li>
+                        @endauth
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle" id="browse-threads" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                {{ __('Channels') }}
+                            </a>
+                            <div class="dropdown-menu" aria-labelledby="browse-threads">
+                                @foreach ($channels as $channel)
+                                    <a href="/threads/{{ $channel->slug }}" class="dropdown-item">{{ __($channel->name) }}</a>
+                                @endforeach
+                            </div>
                         </li>
                     </ul>
 
@@ -51,6 +73,12 @@
                                 </li>
                             @endif
                         @else
+                            <li class="nav-item dropdown">
+                                <a href="#" class="nav-link dropdown-toggle" id="notifications" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    {{ __('Notifications') }}
+                                </a>
+                                <div class="dropdown-menu dropdown-menu-right notify" aria-labelledby="notifications"></div>
+                            </li>
                             <li class="nav-item dropdown">
                                 <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre>
                                     {{ Auth::user()->name }} <span class="caret"></span>
@@ -80,3 +108,10 @@
     </div>
 </body>
 </html>
+<!-- Scripts -->
+<script src="{{ asset('js/app.js') }}"></script>
+@yield('script')
+<script type="text/javascript">
+    NotificationBell();
+    Flash('{{ session("flash") }}');
+</script>
