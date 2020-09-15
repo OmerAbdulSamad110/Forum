@@ -11,7 +11,7 @@ class ForumTest extends TestCase
     public function test_guest_create_no_reply()
     {
         $this->withoutExceptionHandling()->expectException('Illuminate\Auth\AuthenticationException');
-        $this->post('/threads/channel/1/reply', []);
+        $this->post('/threads/channel/1/replies', []);
     }
     public function test_auth_user_reply_thread()
     {
@@ -20,9 +20,8 @@ class ForumTest extends TestCase
         $this->signIn($user);
         $thread = create('App\Thread');
         $reply = make('App\Reply');
-        $this->post($thread->path() . '/reply', $reply->toArray());
-        $this->get($thread->path())
-            ->assertSee($reply->body);
+        $this->post($thread->path() . '/replies', $reply->toArray());
+        $this->assertDatabaseHas('replies', ['body' => $reply->body]);
     }
     public function test_guests_not_create_threads()
     {
@@ -52,8 +51,8 @@ class ForumTest extends TestCase
         $this->withExceptionHandling()->signIn();
         $thread = create('App\Thread');
         $reply = make('App\Reply', ['body' => null]);
-        $this->post($thread->path() . '/reply', $reply->toArray())
-            ->assertSessionHasErrors('body');
+        $this->post($thread->path() . '/replies', $reply->toArray())
+            ->assertSessionHasErrors(['body']);
     }
 
     public function test_thread_channel_exists()
