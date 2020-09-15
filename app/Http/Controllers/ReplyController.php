@@ -2,19 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\CreatePostForm;
 use App\Reply;
+use App\Thread;
 use Illuminate\Http\Request;
 
 class ReplyController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->except('index');
+    }
+
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index($channel_id, Thread $thread)
     {
-        //
+        return $thread->replies()->paginate(2);
     }
 
     /**
@@ -33,9 +40,14 @@ class ReplyController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store($channelId, Thread $thread, CreatePostForm $form)
     {
-        //
+        if ($reply = $form->persist($thread)) {
+            return response([
+                'success' => 'Your reply has been left.',
+                'reply' => $reply->load('user')
+            ]);
+        }
     }
 
     /**
@@ -67,9 +79,12 @@ class ReplyController extends Controller
      * @param  \App\Reply  $reply
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Reply $reply)
+    public function update(CreatePostForm $form, Reply $reply)
     {
-        //
+        $this->authorize('update', $reply);
+        if ($form->persist($reply)) {
+            return response(['success' => 'Reply has been updated.']);
+        }
     }
 
     /**
@@ -80,6 +95,11 @@ class ReplyController extends Controller
      */
     public function destroy(Reply $reply)
     {
-        //
+        $this->authorize('delete', $reply);
+        $reply->delete();
+        if (request()->expectsJson()) {
+            return response()->json(['success' => 'Reply has been deleted.']);
+        }
+        return back();
     }
 }
